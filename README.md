@@ -17,7 +17,7 @@
   eq.init(A0, A1, 5, 6);
   ```
 
-##In the loop call updated
+##In the loop call update
   ```
   eq.update();
   ```
