@@ -16,6 +16,13 @@
   //analog right, analog left, strobe, reset
   eq.init(A0, A1, 5, 6);
   ```
+###For using a single chip
+> instead of a stereo module just pass in 1 analog value
+  ```
+  //analog, strobe, reset
+  eq.init(A0, 5, 6);
+  ```
+ > both left and right data sets will be the same, use either.
 
 ##In the loop call update
   ```
