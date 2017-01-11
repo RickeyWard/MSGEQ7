@@ -35,7 +35,36 @@
 
 void MSGEQ7::init(uint8_t analog_R_pin, uint8_t analog_L_pin, uint8_t strobePin, uint8_t resetPin)
 {
+    stereo = true;
+
     this->MSGEQ7_ANALOG_PIN_R = analog_R_pin;
+    this->MSGEQ7_ANALOG_PIN_L = analog_L_pin;
+    this->MSGEQ7_RESET_PIN = resetPin;
+    this->MSGEQ7_STROBE_PIN = strobePin;
+
+    pinMode(this->MSGEQ7_ANALOG_PIN_R, INPUT);
+    pinMode(this->MSGEQ7_ANALOG_PIN_L, INPUT);
+    pinMode(this->MSGEQ7_STROBE_PIN, OUTPUT);
+    pinMode(this->MSGEQ7_RESET_PIN, OUTPUT);
+    digitalWrite(this->MSGEQ7_RESET_PIN, LOW);
+    digitalWrite(this->MSGEQ7_STROBE_PIN, HIGH);
+
+    for(int i = 0; i < NUM_FREQUENCY_BANDS; i ++)
+    {
+        this->RawData_L[i] = 0;
+        this->RawData_R[i] = 0;
+        this->Data_L[i] = 0;
+        this->Data_R[i] = 0;
+    }
+
+    this->initialized = true;
+}
+
+void MSGEQ7::init(uint8_t analog_L_pin, uint8_t strobePin, uint8_t resetPin)
+{
+    stereo = false;
+
+    this->MSGEQ7_ANALOG_PIN_R = analog_L_pin;
     this->MSGEQ7_ANALOG_PIN_L = analog_L_pin;
     this->MSGEQ7_RESET_PIN = resetPin;
     this->MSGEQ7_STROBE_PIN = strobePin;
@@ -60,6 +89,9 @@ void MSGEQ7::init(uint8_t analog_R_pin, uint8_t analog_L_pin, uint8_t strobePin,
 
 void MSGEQ7::reset(void)
 {
+    if(!initialized)
+        return;
+
     digitalWrite(this->MSGEQ7_RESET_PIN, HIGH);
     digitalWrite(this->MSGEQ7_RESET_PIN, LOW);
 }
@@ -84,8 +116,12 @@ bandData MSGEQ7::readOneBand(void (*callback)(uint8_t lval, uint8_t rval, uint8_
 
     digitalWrite(this->MSGEQ7_STROBE_PIN, LOW);
     delayMicroseconds(30); // Allow the output to settle
-    newData.rawDataR = analogRead(this->MSGEQ7_ANALOG_PIN_R);
     newData.rawDataL = analogRead(this->MSGEQ7_ANALOG_PIN_L);
+    if(stereo)
+        newData.rawDataR = analogRead(this->MSGEQ7_ANALOG_PIN_R);
+    else
+        newData.rawDataR = newData.rawDataL;
+
 
     this->RawData_R[this->ReadOneBandCounter] = newData.rawDataR;
     this->RawData_L[this->ReadOneBandCounter] = newData.rawDataL;
@@ -141,8 +177,11 @@ void MSGEQ7::update(void (*callback)(uint8_t lval, uint8_t rval, uint8_t col))
       {
         digitalWrite(this->MSGEQ7_STROBE_PIN, LOW);
         delayMicroseconds(30); // Allow the output to settle
-        frequencyBandVolume_R = analogRead(this->MSGEQ7_ANALOG_PIN_R);
         frequencyBandVolume_L = analogRead(this->MSGEQ7_ANALOG_PIN_L);
+        if(stereo)
+            frequencyBandVolume_R = analogRead(this->MSGEQ7_ANALOG_PIN_R);
+        else
+            frequencyBandVolume_R = frequencyBandVolume_L;
 
         this->RawData_R[i] = frequencyBandVolume_R;
         this->RawData_L[i] = frequencyBandVolume_L;
@@ -173,6 +212,5 @@ void MSGEQ7::update(void (*callback)(uint8_t lval, uint8_t rval, uint8_t col))
         
         if(callback != NULL)
             callback(this->Data_L[i], this->Data_R[i], i);
-    
       }
 }

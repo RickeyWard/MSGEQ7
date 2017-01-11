@@ -56,6 +56,7 @@ class MSGEQ7
 {
     public:
         void init(uint8_t analog_R_pin, uint8_t analog_L_pin, uint8_t strobePin, uint8_t resetPin);
+        void init(uint8_t analog_L_pin, uint8_t strobePin, uint8_t resetPin);
         void update(void);
         void update(void (*callback)(uint8_t lval, uint8_t rval, uint8_t col));
         void reset(void);
@@ -68,7 +69,8 @@ class MSGEQ7
         uint8_t Data_R[NUM_FREQUENCY_BANDS];
     private:
 
-        bool initialized = false; 
+        bool initialized = false;
+        bool stereo = false;
 
         uint8_t MSGEQ7_ANALOG_PIN_R = A1;
         uint8_t MSGEQ7_ANALOG_PIN_L = A0;
