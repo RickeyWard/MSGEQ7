@@ -11,7 +11,7 @@
   MSGEQ7 eq;
   ```
 
-##Initalize in setup
+##Initialize in setup
  ```
   //analog right, analog left, strobe, reset
   eq.init(A0, A1, 5, 6);
